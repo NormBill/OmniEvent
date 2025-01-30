@@ -28,16 +28,18 @@ from transformers.trainer import (
     nested_concat, 
     nested_numpify, 
     IterableDatasetShard, 
-    nested_truncate, 
-    EvalPrediction, 
+    # nested_truncate,
+    EvalPrediction,
     denumpify_detensorize,
     has_length,
-    is_torch_tpu_available
+    # is_torch_tpu_available
 )
-if is_torch_tpu_available():
-    import torch_xla.core.xla_model as xm
-    import torch_xla.debug.metrics as met
-    import torch_xla.distributed.parallel_loader as pl
+from transformers.trainer_pt_utils import nested_truncate
+
+# if is_torch_tpu_available():
+#     import torch_xla.core.xla_model as xm
+#     import torch_xla.debug.metrics as met
+#     import torch_xla.distributed.parallel_loader as pl
 
 logger = logging.getLogger(__name__)
 
@@ -104,8 +106,8 @@ class Trainer(Trainer):
         # Do this before wrapping.
         eval_dataset = getattr(dataloader, "dataset", None)
 
-        if is_torch_tpu_available():
-            dataloader = pl.ParallelLoader(dataloader, [args.device]).per_device_loader(args.device)
+        # if is_torch_tpu_available():
+        #     dataloader = pl.ParallelLoader(dataloader, [args.device]).per_device_loader(args.device)
 
         if args.past_index >= 0:
             self._past = None
@@ -135,8 +137,8 @@ class Trainer(Trainer):
             # Prediction step
             loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
 
-            if is_torch_tpu_available():
-                xm.mark_step()
+            # if is_torch_tpu_available():
+            #     xm.mark_step()
 
             # Update containers on host
             if loss is not None:

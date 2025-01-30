@@ -21,12 +21,13 @@ import logging
 
 from transformers.trainer_seq2seq import (
     is_deepspeed_zero3_enabled,
-    PredictionOutput
 )
+
+from transformers.trainer_utils import PredictionOutput
+
 from .trainer import Trainer
 from .model.constraint_decoding import get_constraint_decoder
 from .model.label_smoother_sum import SumLabelSmoother
-
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +128,11 @@ class Seq2SeqTrainer(Trainer):
         return super().predict(test_dataset, ignore_keys=ignore_keys, metric_key_prefix=metric_key_prefix)
 
     def prediction_step(self,
-                model: nn.Module,
-                inputs: Dict[str, Union[torch.Tensor, Any]],
-                prediction_loss_only: bool,
-                ignore_keys: Optional[List[str]] = None) -> Tuple[Optional[float],
-                                                                  Optional[torch.Tensor], Optional[torch.Tensor]]:
+                        model: nn.Module,
+                        inputs: Dict[str, Union[torch.Tensor, Any]],
+                        prediction_loss_only: bool,
+                        ignore_keys: Optional[List[str]] = None) -> Tuple[Optional[float],
+    Optional[torch.Tensor], Optional[torch.Tensor]]:
         """
         Perform an evaluation step on `model` using `inputs`.
 
@@ -261,17 +262,17 @@ class ConstrainedSeq2SeqTrainer(Seq2SeqTrainer):
         #     print('Using %s' % self.label_smoother)
         # else:
         #     self.label_smoother = None
-        
+
         self.constraint_decoder = get_constraint_decoder(tokenizer=self.tokenizer,
-                                                            type_schema=self.decoding_type_schema,
-                                                            source_prefix=source_prefix)
+                                                         type_schema=self.decoding_type_schema,
+                                                         source_prefix=source_prefix)
 
     def prediction_step(self,
                         model: nn.Module,
                         inputs: Dict[str, Union[torch.Tensor, Any]],
                         prediction_loss_only: bool,
                         ignore_keys: Optional[List[str]] = None) -> Tuple[Optional[float],
-                                                                          Optional[torch.Tensor], Optional[torch.Tensor]]:
+    Optional[torch.Tensor], Optional[torch.Tensor]]:
         """
         Perform an evaluation step on `model` using `inputs`.
 
@@ -292,6 +293,7 @@ class ConstrainedSeq2SeqTrainer(Seq2SeqTrainer):
             Tuple[Optional[float], Optional[torch.Tensor], Optional[torch.Tensor]]: A tuple with the loss, logits and
             labels (each being optional).
         """
+
         def prefix_allowed_tokens_fn(batch_id, sent):
             """Performs constraint decoding on the given batch and sentences."""
             src_sentence = inputs['input_ids'][batch_id]
